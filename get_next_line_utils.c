@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 19:46:47 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 05:35:56 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/06 06:14:27 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,5 +77,6 @@ size_t	ft_strlen(const char *str)
 char	*ft_free_n_return(char *free_ptr, char *ret)
 {
 	free(free_ptr);
+	free_ptr = NULL;
 	return (ret);
 }
