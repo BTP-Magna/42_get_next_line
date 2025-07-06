@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 17:50:10 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/06 22:22:29 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ char	*ft_gnl_join(char *excess, char *buffer, char **new_line_ptr)
 
 	n_str = malloc(ft_strlen(excess) + ft_strlen(buffer) + 1);
 	if (!n_str)
-		ft_free_n_return(excess, buffer, NULL);
+		return (NULL);
 	ptr = n_str;
 	e_ptr = excess;
 	if (e_ptr)
@@ -35,7 +35,7 @@ char	*ft_gnl_join(char *excess, char *buffer, char **new_line_ptr)
 	while (*b_ptr)
 		*ptr++ = *b_ptr++;
 	*ptr = '\0';
-	return (ft_free_n_return(excess, buffer, n_str));
+	return (ft_free_n_return(excess, NULL, n_str));
 }
 
 char	*ft_gnl_extract(char **excess, char *new_line_ptr)
@@ -76,11 +76,11 @@ char	*get_next_line(int fd)
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	new_line_ptr = ft_strchr(excess, '\n');
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (ft_free_n_return(excess, NULL, NULL));
 	while (!new_line_ptr)
 	{
-		buffer = malloc(BUFFER_SIZE + 1);
-		if (!buffer)
-			return (ft_free_n_return(excess, NULL, NULL));
 		byte = read(fd, buffer, BUFFER_SIZE);
 		if (byte == -1)
 			return (ft_free_n_return(excess, buffer, NULL));
@@ -91,6 +91,7 @@ char	*get_next_line(int fd)
 		if (!excess)
 			return (ft_free_n_return(excess, buffer, NULL));
 	}
+	free(buffer);
 	return (ft_gnl_extract(&excess, new_line_ptr));
 }
 
