@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 03:01:50 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 03:19:30 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,9 @@
  * If newline character is found during copy from buffer, update new_line_ptr
  * flag to it location on newly form string.
  *
- * @param st_buff Hold leftover from previous get_next_line call
+ * Reasoning to get newline address here is to prevent re read of the buffer
+ *
+ * @param st_buff Hold leftover from previous get_next_line call (can be NULL)
  * @param buffer Newly read content from fd
  * @param b_size Size of newly read buffer
  * @param nl_ptr store '\n' position if found
@@ -32,29 +34,29 @@
  */
 char	*ft_gnl_join(char *st_buff, char *buffer, ssize_t b_size, char **nl_ptr)
 {
-	char	*n_str;
-	char	*sb_ptr;
+	char	*new_str;
+	char	*stb_ptr;
 	char	*b_ptr;
 	char	*n_ptr;
 
-	n_str = malloc(ft_strlen(st_buff) + b_size + 1);
-	if (!n_str)
+	new_str = malloc(ft_strlen(st_buff) + b_size + 1);
+	if (!new_str)
 		return (NULL);
-	n_ptr = n_str;
-	sb_ptr = st_buff;
-	if (sb_ptr)
-		while (*sb_ptr)
-			*n_ptr++ = *sb_ptr++;
+	n_ptr = new_str;
+	stb_ptr = st_buff;
+	if (stb_ptr)
+		while (*stb_ptr)
+			*n_ptr++ = *stb_ptr++;
 	b_ptr = buffer;
-	while (*b_ptr)
+	while (b_size--)
 	{
-		if (*b_ptr == '\n')
+		if (*b_ptr == '\n' && !(*nl_ptr))
 			*nl_ptr = n_ptr;
 		*n_ptr++ = *b_ptr++;
 	}
 	*n_ptr = '\0';
 	free(st_buff);
-	return (n_str);
+	return (new_str);
 }
 
 char	*ft_gnl_extract(char **st_buff, char *nl_ptr)
@@ -129,34 +131,34 @@ char	*get_next_line(int fd)
 	return (ft_gnl_extract(&st_buff, nl_ptr));
 }
 
-// #include <fcntl.h>
-// #include <stdio.h>
+#include <fcntl.h>
+#include <stdio.h>
 
-// void	ft_putstr(char *str)
-// {
-// 	while (*str)
-// 		write(1, str++, 1);
-// 	write(1, "\n", 1);
-// }
+void	ft_putstr(char *str)
+{
+	while (*str)
+		write(1, str++, 1);
+	write(1, "\n", 1);
+}
 
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*next_line;
+int	main(void)
+{
+	int		fd;
+	char	*next_line;
 
-// 	fd = open("test.txt", O_RDONLY);
-// 	if (fd == -1)
-// 		return (1);
-// 	// next_line = malloc(BUFFER_SIZE);
-// 	// *next_line = '\0';
-// 	// ft_putstr(next_line);
-// 	next_line = get_next_line(fd);
-// 	while (next_line)
-// 	{
-// 		ft_putstr(next_line);
-// 		free(next_line);
-// 		next_line = get_next_line(fd);
-// 	}
-// 	close(fd);
-// 	return (0);
-// }
+	fd = open("test.txt", O_RDONLY);
+	if (fd == -1)
+		return (1);
+	// next_line = malloc(BUFFER_SIZE);
+	// *next_line = '\0';
+	// ft_putstr(next_line);
+	next_line = get_next_line(fd);
+	while (next_line)
+	{
+		ft_putstr(next_line);
+		free(next_line);
+		next_line = get_next_line(fd);
+	}
+	close(fd);
+	return (0);
+}
