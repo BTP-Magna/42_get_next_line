@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 02:47:23 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 03:02:43 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ typedef struct s_fd_list
 }						t_fd_list;
 
 char					*get_next_line(int fd);
-char					*ft_gnl_join(char *st_buff, char *buffer, ssize_t b_size
-							, char **nl_ptr);
+char					*ft_gnl_join(char *st_buff, char *buffer,
+							ssize_t b_size, char **nl_ptr);
 char					*get_next_line(int fd);
 
 char					*ft_strchr(const char *str, int c);

@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 19:46:47 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 02:47:53 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 03:02:36 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ char	*ft_strdup(const char *str)
 
 char	*ft_strchr(const char *str, int c)
 {
-	unsigned char character;
+	unsigned char	character;
 
 	if (!str)
 		return (NULL);
