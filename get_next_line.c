@@ -6,63 +6,82 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 02:00:09 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 02:59:59 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_gnl_join(char *static_buffer, char *buffer, char **new_line_ptr)
+/**
+ * @brief Append buffer to static buffer and track position of newline
+ *
+ * @details
+ *
+ * Merge a buffer onto the end of static buffer, allocate new string to hold
+ * result. then frees old static buffer
+ *
+ * If newline character is found during copy from buffer, update new_line_ptr
+ * flag to it location on newly form string.
+ *
+ * @param st_buff Hold leftover from previous get_next_line call
+ * @param buffer Newly read content from fd
+ * @param b_size Size of newly read buffer
+ * @param nl_ptr store '\n' position if found
+ * @return char* newly allocated string containing static_buffer + buffer or
+ * NULL if any error occour
+ */
+char	*ft_gnl_join(char *st_buff, char *buffer, ssize_t b_size, char **nl_ptr)
 {
 	char	*n_str;
-	char	*e_ptr;
+	char	*sb_ptr;
 	char	*b_ptr;
-	char	*ptr;
+	char	*n_ptr;
 
-	n_str = malloc(ft_strlen(static_buffer) + ft_strlen(buffer) + 1);
+	n_str = malloc(ft_strlen(st_buff) + b_size + 1);
 	if (!n_str)
 		return (NULL);
-	ptr = n_str;
-	e_ptr = static_buffer;
-	if (e_ptr)
-		while (*e_ptr)
-			*ptr++ = *e_ptr++;
+	n_ptr = n_str;
+	sb_ptr = st_buff;
+	if (sb_ptr)
+		while (*sb_ptr)
+			*n_ptr++ = *sb_ptr++;
 	b_ptr = buffer;
-	while (*b_ptr && *b_ptr != '\n')
-		*ptr++ = *b_ptr++;
-	if (*b_ptr == '\n')
-		*new_line_ptr = ptr;
 	while (*b_ptr)
-		*ptr++ = *b_ptr++;
-	*ptr = '\0';
-	return (ft_free_n_return(static_buffer, NULL, n_str));
+	{
+		if (*b_ptr == '\n')
+			*nl_ptr = n_ptr;
+		*n_ptr++ = *b_ptr++;
+	}
+	*n_ptr = '\0';
+	free(st_buff);
+	return (n_str);
 }
 
-char	*ft_gnl_extract(char **static_buffer, char *new_line_ptr)
+char	*ft_gnl_extract(char **st_buff, char *nl_ptr)
 {
 	char	*n_line;
 	char	*e_str;
 
-	if (!(*static_buffer))
+	if (!(*st_buff))
 		return (NULL);
-	if (*(*static_buffer) == '\0')
-		return (ft_free_n_return(*static_buffer, NULL, NULL));
-	if (new_line_ptr)
-		n_line = ft_substr(*static_buffer, new_line_ptr + 1);
+	if (*(*st_buff) == '\0')
+		return (ft_free_n_return(st_buff, NULL, NULL));
+	if (nl_ptr)
+		n_line = ft_substr(*st_buff, nl_ptr + 1);
 	else
-		n_line = ft_strdup(*static_buffer);
+		n_line = ft_strdup(*st_buff);
 	if (!n_line)
-		return (ft_free_n_return(*static_buffer, NULL, NULL));
+		return (ft_free_n_return(st_buff, NULL, NULL));
 	e_str = NULL;
-	if (new_line_ptr)
-		e_str = ft_strdup(new_line_ptr + 1);
-	if (!e_str && new_line_ptr)
+	if (nl_ptr)
+		e_str = ft_strdup(nl_ptr + 1);
+	if (!e_str && nl_ptr)
 	{
 		free(n_line);
-		return (ft_free_n_return(*static_buffer, NULL, NULL));
+		return (ft_free_n_return(st_buff, NULL, NULL));
 	}
-	free(*static_buffer);
-	*static_buffer = e_str;
+	free(*st_buff);
+	*st_buff = e_str;
 	return (n_line);
 }
 
@@ -83,31 +102,31 @@ char	*ft_gnl_extract(char **static_buffer, char *new_line_ptr)
  */
 char	*get_next_line(int fd)
 {
-	static char	*static_buffer;
-	char		*new_line_ptr;
+	static char	*st_buff;
+	char		*nl_ptr;
 	char		*buffer;
 	ssize_t		byte;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	new_line_ptr = ft_strchr(static_buffer, '\n');
+	nl_ptr = ft_strchr(st_buff, '\n');
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
-		return (ft_free_n_return(static_buffer, NULL, NULL));
-	while (!new_line_ptr)
+		return (ft_free_n_return(&st_buff, NULL, NULL));
+	while (!nl_ptr)
 	{
 		byte = read(fd, buffer, BUFFER_SIZE);
 		if (byte == -1)
-			return (ft_free_n_return(static_buffer, buffer, NULL));
+			return (ft_free_n_return(&st_buff, buffer, NULL));
 		if (byte == 0)
 			break ;
 		*(buffer + byte) = '\0';
-		static_buffer = ft_gnl_join(static_buffer, buffer, &new_line_ptr);
-		if (!static_buffer)
-			return (ft_free_n_return(static_buffer, buffer, NULL));
+		st_buff = ft_gnl_join(st_buff, buffer, byte, &nl_ptr);
+		if (!st_buff)
+			return (ft_free_n_return(&st_buff, buffer, NULL));
 	}
 	free(buffer);
-	return (ft_gnl_extract(&static_buffer, new_line_ptr));
+	return (ft_gnl_extract(&st_buff, nl_ptr));
 }
 
 #include <fcntl.h>
