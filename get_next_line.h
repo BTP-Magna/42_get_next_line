@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 22:23:59 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 01:56:17 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include <unistd.h>
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 1
+#  define BUFFER_SIZE 42
 # endif
 
 typedef struct s_fd_list
@@ -27,11 +27,11 @@ typedef struct s_fd_list
 }						t_fd_list;
 
 char					*get_next_line(int fd);
-char					*ft_gnl_join(char *excess, char *buffer,
+char					*ft_gnl_join(char *static_buffer, char *buffer,
 							char **new_line_ptr);
 char					*get_next_line(int fd);
 
-char					*ft_strchr(char *str, unsigned char c);
+char					*ft_strchr(const char *str, int c);
 char					*ft_strdup(const char *str);
 char					*ft_substr(const char *from, char *to);
 size_t					ft_strlen(const char *str);

@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 19:46:47 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 17:49:36 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/07 01:53:39 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,19 +46,33 @@ char	*ft_strdup(const char *str)
 	return (n_str);
 }
 
-char	*ft_strchr(char *str, unsigned char c)
+/**
+ * @brief Search for the first occurrence of character in string.
+ * @details
+ *
+ * Scan the string for the first occurrence of character and return it position
+ * if exist else return NULL include if searching for '\0'
+ *
+ * @param str pointer to string to search
+ * @param c character to find
+ * @return char* position of c if it not exist return NULL
+ */
+
+char	*ft_strchr(const char *str, int c)
 {
-	char	*ptr;
+	unsigned char character;
 
 	if (!str)
 		return (NULL);
-	ptr = str;
-	while (*ptr)
+	character = (unsigned char)c;
+	while (*str)
 	{
-		if (*ptr == c)
-			return (ptr);
-		ptr++;
+		if (*str == character)
+			return ((char *)str);
+		str++;
 	}
+	if (*str == character)
+		return ((char *)str);
 	return (NULL);
 }
 
