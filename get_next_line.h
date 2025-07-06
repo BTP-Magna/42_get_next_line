@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 07:24:20 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/06 17:50:21 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ char					*ft_strchr(char *str, unsigned char c);
 char					*ft_strdup(const char *str);
 char					*ft_substr(const char *from, char *to);
 size_t					ft_strlen(const char *str);
-char					*ft_free_n_return(char *free_ptr, char *ret);
+char					*ft_free_n_return(char *free1, char *free2, char *ret);
+
 
 #endif

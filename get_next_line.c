@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/06 07:30:46 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/06 17:50:10 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,24 +16,26 @@ char	*ft_gnl_join(char *excess, char *buffer, char **new_line_ptr)
 {
 	char	*n_str;
 	char	*e_ptr;
+	char	*b_ptr;
 	char	*ptr;
 
 	n_str = malloc(ft_strlen(excess) + ft_strlen(buffer) + 1);
 	if (!n_str)
-		ft_free_n_return(excess, NULL);
+		ft_free_n_return(excess, buffer, NULL);
 	ptr = n_str;
 	e_ptr = excess;
 	if (e_ptr)
 		while (*e_ptr)
 			*ptr++ = *e_ptr++;
-	while (*buffer && *buffer != '\n')
-		*ptr++ = *buffer++;
-	if (*buffer == '\n')
+	b_ptr = buffer;
+	while (*b_ptr && *b_ptr != '\n')
+		*ptr++ = *b_ptr++;
+	if (*b_ptr == '\n')
 		*new_line_ptr = ptr;
-	while (*buffer)
-		*ptr++ = *buffer++;
+	while (*b_ptr)
+		*ptr++ = *b_ptr++;
 	*ptr = '\0';
-	return (ft_free_n_return(excess, n_str));
+	return (ft_free_n_return(excess, buffer, n_str));
 }
 
 char	*ft_gnl_extract(char **excess, char *new_line_ptr)
@@ -44,20 +46,20 @@ char	*ft_gnl_extract(char **excess, char *new_line_ptr)
 	if (!(*excess))
 		return (NULL);
 	if (*(*excess) == '\0')
-		return (ft_free_n_return(*excess, NULL));
+		return (ft_free_n_return(*excess, NULL, NULL));
 	if (new_line_ptr)
 		n_line = ft_substr(*excess, new_line_ptr + 1);
 	else
 		n_line = ft_strdup(*excess);
 	if (!n_line)
-		return (ft_free_n_return(*excess, NULL));
+		return (ft_free_n_return(*excess, NULL, NULL));
 	e_str = NULL;
 	if (new_line_ptr)
 		e_str = ft_strdup(new_line_ptr + 1);
 	if (!e_str && new_line_ptr)
 	{
 		free(n_line);
-		return (ft_free_n_return(*excess, NULL));
+		return (ft_free_n_return(*excess, NULL, NULL));
 	}
 	free(*excess);
 	*excess = e_str;
@@ -68,7 +70,7 @@ char	*get_next_line(int fd)
 {
 	static char	*excess;
 	char		*new_line_ptr;
-	char		buffer[BUFFER_SIZE + 1];
+	char		*buffer;
 	ssize_t		byte;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
@@ -76,15 +78,18 @@ char	*get_next_line(int fd)
 	new_line_ptr = ft_strchr(excess, '\n');
 	while (!new_line_ptr)
 	{
+		buffer = malloc(BUFFER_SIZE + 1);
+		if (!buffer)
+			return (ft_free_n_return(excess, NULL, NULL));
 		byte = read(fd, buffer, BUFFER_SIZE);
 		if (byte == -1)
-			return (ft_free_n_return(excess, NULL));
+			return (ft_free_n_return(excess, buffer, NULL));
 		if (byte == 0)
 			break ;
-		buffer[byte] = '\0';
+		*(buffer + byte) = '\0';
 		excess = ft_gnl_join(excess, buffer, &new_line_ptr);
 		if (!excess)
-			return (NULL);
+			return (ft_free_n_return(excess, buffer, NULL));
 	}
 	return (ft_gnl_extract(&excess, new_line_ptr));
 }
