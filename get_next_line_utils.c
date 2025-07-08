@@ -6,26 +6,40 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/04 19:46:47 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 03:02:36 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:12:19 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_substr(const char *from, char *to)
+/**
+ * @brief Duplicates characters from start pointer up to but not including end
+ *
+ * @details
+ * Allocates a new null-terminated string containing the bytes starting from
+ * `start` and ending just before `end`. The range is exclusive of `end`.
+ *
+ * @param start Pointer to beginning of range.
+ * @param end Pointer one past the final character to copy.
+ * @return Newly allocated string on success, or NULL on error.
+ *
+ * @note Caller must ensure that `start < end` and that both belong to the same
+ * allocation string.
+ */
+char	*ft_strslice(const char *start, const char *end)
 {
 	char	*new_str;
-	char	*n_ptr;
+	char	*ptr;
 
-	if (!from || !to || from > to)
+	if (!start || !end || start > end)
 		return (NULL);
-	new_str = malloc(to - from + 1);
+	new_str = malloc(end - start + 1);
 	if (!new_str)
 		return (NULL);
-	n_ptr = new_str;
-	while (from < to)
-		*n_ptr++ = *from++;
-	*n_ptr = '\0';
+	ptr = new_str;
+	while (start < end)
+		*ptr++ = *start++;
+	*ptr = '\0';
 	return (new_str);
 }
 
@@ -88,14 +102,29 @@ size_t	ft_strlen(const char *str)
 	return (len);
 }
 
-char	*ft_free_n_return(char **free1, char *free2, char *ret)
+/**
+ * @brief Frees one or two pointers and returns a value.
+ *
+ * @details
+ * If `*ptr1` is non-NULL, it is freed and set to NULL.
+ * If `ptr2` is non-NULL, it is freed.
+ * Returns `ret`, useful for early-exit or error handling.
+ *
+ * @param ptr1 Pointer to a pointer to be freed and nulled (double free-safe).
+ * @param ptr2 Optional second pointer to free (not nulled).
+ * @param ret Value to return after freeing.
+ * @return The value of `ret`.
+ *
+ * @note `ptr1` must be valid (not NULL); `*ptr1` may be NULL.
+ */
+char	*ft_free_n_return(char **ptr1, char *ptr2, char *ret)
 {
-	if (*free1)
+	if (ptr1 && *ptr1)
 	{
-		free(*free1);
-		*free1 = NULL;
+		free(*ptr1);
+		*ptr1 = NULL;
 	}
-	if (free2)
-		free(free2);
+	if (ptr2)
+		free(ptr2);
 	return (ret);
 }

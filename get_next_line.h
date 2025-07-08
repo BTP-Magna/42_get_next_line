@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/07 03:02:43 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/08 16:18:21 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,26 +15,20 @@
 # include <stdlib.h>
 # include <unistd.h>
 
+// Define BUFFER_SIZE if not provided via compiler flag (-D BUFFER_SIZE=42)
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 42
+#  define BUFFER_SIZE 1024
 # endif
-
-typedef struct s_fd_list
-{
-	int					fd;
-	char				*excess;
-	struct s_fd_list	*next;
-}						t_fd_list;
 
 char					*get_next_line(int fd);
 char					*ft_gnl_join(char *st_buff, char *buffer,
 							ssize_t b_size, char **nl_ptr);
-char					*get_next_line(int fd);
+char					*ft_gnl_extract(char **st_buff, char *nl_ptr);
 
 char					*ft_strchr(const char *str, int c);
 char					*ft_strdup(const char *str);
-char					*ft_substr(const char *from, char *to);
+char					*ft_strslice(const char *start, const char *end);
 size_t					ft_strlen(const char *str);
-char					*ft_free_n_return(char **free1, char *free2, char *ret);
+char					*ft_free_n_return(char **ptr1, char *ptr2, char *ret);
 
 #endif
