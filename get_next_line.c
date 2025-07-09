@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/08 22:34:31 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/10 05:05:57 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,6 @@ char	*get_next_line(int fd)
 // {
 // 	while (*str)
 // 		write(1, str++, 1);
-// 	write(1, "\n", 1);
 // }
 
 // int	main(void)
