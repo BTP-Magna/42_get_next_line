@@ -6,12 +6,11 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/10 04:57:27 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/10 22:46:07 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
-#include "stdio.h"
 
 /**
  * Allocate extend str to copy over old stash and append buffer
@@ -80,9 +79,12 @@ char	*ft_gnl_extract_line(t_fd_list **head, t_fd_list *node)
 	char	*extract_str;
 	char	*excess_str;
 
-	if (!node->stash || node->nl_offset == -1)
+	if (node->nl_offset == -1)
 	{
-		extract_str = ft_strdup(node->stash, node->size);
+		if (!node->stash || *(node->stash) == '\0')
+			extract_str = NULL;
+		else
+			extract_str = ft_strdup(node->stash, node->size);
 		ft_remove_fd_node(head, node->fd);
 		return (extract_str);
 	}
@@ -94,18 +96,6 @@ char	*ft_gnl_extract_line(t_fd_list **head, t_fd_list *node)
 		return (ft_clear_all_and_return(head, extract_str, NULL));
 	node->stash = excess_str;
 	return (extract_str);
-}
-
-// For debuging initial link list testing
-void	print_fd_list(t_fd_list *head)
-{
-	while (head)
-	{
-		printf("fd: %d -> ", head->fd);
-		printf("stash: %s", head->stash);
-		head = head->next;
-	}
-	printf("NULL\n");
 }
 
 /**
@@ -123,7 +113,7 @@ char	*get_next_line(int fd)
 	char				*buffer;
 	ssize_t				byte_read;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) == -1)
 		return (NULL);
 	stash_node = ft_get_fd_node(&stash_head, fd);
 	if (!stash_node)
@@ -143,121 +133,75 @@ char	*get_next_line(int fd)
 	}
 	free(buffer);
 	// print_fd_list(stash_head); // For debug
-	// if (fd == 5)
-	// 	ft_remove_fd_node(&stash_head, 4);
-	// printf("After\n");
-	// print_fd_list(stash_head);
 	return (ft_gnl_extract_line(&stash_head, stash_node));
 }
 
-#include <fcntl.h>
-#include <stdio.h>
+// #include <fcntl.h>
+// #include <stdio.h>
 
-void	ft_putstr(char *str)
-{
-	while (*str)
-		write(1, str++, 1);
-}
+// void	ft_putstr(char *str)
+// {
+// 	while (*str)
+// 		write(1, str++, 1);
+// }
 
-int	main(void)
-{
-	char	*next_line;
+// int	main(void)
+// {
+// 	char	*next_line;
 
-	int fd, fd1, fd2;
-	fd = open("../test.txt", O_RDONLY);
-	if (fd == -1)
-		return (1);
-	fd1 = open("../todo", O_RDONLY);
-	if (fd1 == -1)
-		return (1);
-	fd2 = open("../LICENSE", O_RDONLY);
-	if (fd1 == -1)
-		return (1);
-	// next_line = malloc(BUFFER_SIZE);
-	// *next_line = '\0';
-	// ft_putstr(next_line);
-	next_line = get_next_line(fd);
-	while (next_line)
-	{
-		ft_putstr(next_line);
-		free(next_line);
-		next_line = get_next_line(fd);
-	}
-	close(fd);
-	close(fd1);
-	close(fd2);
-	return (0);
-}
+// 	int fd, fd1, fd2, fd3;
+// 	fd = open("../41_with_nl", O_RDONLY);
+// 	if (fd == -1)
+// 		return (1);
+// 	next_line = get_next_line(1000);
+// 	next_line = get_next_line(fd);
+// 	ft_putstr(next_line);
+// 	free(next_line);
+// 	fd1 = open("../42_with_nl", O_RDONLY);
+// 	if (fd1 == -1)
+// 		return (1);
+// 	next_line = get_next_line(1001);
+// 	next_line = get_next_line(fd1);
+// 	ft_putstr(next_line);
+// 	free(next_line);
+// 	fd2 = open("../43_with_nl", O_RDONLY);
+// 	if (fd1 == -1)
+// 		return (1);
+// 	next_line = get_next_line(1002);
+// 	next_line = get_next_line(fd2);
+// 	ft_putstr(next_line);
+// 	free(next_line);
 
+// 	next_line = get_next_line(1003);
+// 	next_line = get_next_line(fd);
+// 	ft_putstr(next_line);
+// 	free(next_line);
+// 	next_line = get_next_line(1004);
+// 	next_line = get_next_line(fd1);
+// 	ft_putstr(next_line);
+// 	free(next_line);
+// 	next_line = get_next_line(1005);
+// 	next_line = get_next_line(fd2);
+// 	ft_putstr(next_line);
+// 	free(next_line);
 
+// 	next_line = get_next_line(fd);
+// 	next_line = get_next_line(fd1);
+// 	next_line = get_next_line(fd2);
 
-/**
- * if link list point to null do nothing return
- * Need two pointer one walk ahead first and another one walk behind
- * iterate through the link list if current node equal fd
- * previous node next will point to present node next
- * if it was fd match first node move static link list head address to next one
- *
- * So I set the head to next address if it match fd
- * but still use present pointer in inner loop to free it properly in the loop
- * to limit the line usage other while it would exceed 25 line
- *
- * or I can move if ((*head)->fd == fd)
-		*head = (*head)->next;
-   to be inside the loop after free present node I can check if *head point
-   to present and if so move the head forward and clean it but this way it
-   will loop I suppose it would only check once when fd match huh
- */
-// This one work as well but will leave two dangling pointer if head == fd
-// But it will instantly move assign to head on next call anyway though
-void	ft_remove_fd_node_ver0(t_fd_list **head, int fd)
-{
-	t_fd_list	*previous_node;
-	t_fd_list	*present_node;
+// 	fd3 = open("../nl", O_RDONLY);
+// 	if (fd == -1)
+// 		return (1);
+// 	next_line = get_next_line(1006);
+// 	next_line = get_next_line(fd3);
+// 	ft_putstr(next_line);
+// 	free(next_line);
+// 	next_line = get_next_line(1007);
+// 	next_line = get_next_line(fd3);
 
-	if (!*head)
-		return ;
-	present_node = *head;
-	previous_node = *head;
-	if ((*head)->fd == fd)
-		*head = (*head)->next;
-	while (present_node)
-	{
-		if (present_node->fd == fd)
-		{
-			previous_node->next = present_node->next;
-			if (present_node->stash)
-				free(present_node->stash);
-			free(present_node);
-			return ;
-		}
-		previous_node = present_node;
-		present_node = present_node->next;
-	}
-}
-
-t_fd_list	*ft_get_fd_node_ver0(t_fd_list **head, int fd)
-{
-	t_fd_list *node;
-	t_fd_list *new_node;
-
-	if (*head)
-	{
-		node = *head;
-		while (node->fd != fd && node->next)
-			node = node->next;
-		if (node->fd == fd)
-			return (node);
-	}
-	new_node = malloc(sizeof(t_fd_list));
-	if (!new_node)
-		// need way to clean the head for all it link list node
-		return (NULL);      // or maybe clean it outside
-	new_node->stash = NULL; // Struct init without explicit assign value will
-	new_node->size = 0;     // be assign as NULL or 0 so these two can be remove
-	new_node->fd = fd;
-	new_node->nl_offset = -1;
-	new_node->next = *head;
-	*head = new_node;
-	return (new_node);
-}
+// 	close(fd);
+// 	close(fd1);
+// 	close(fd2);
+// 	close(fd3);
+// 	return (0);
+// }

@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/10 04:31:07 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/10 22:46:24 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 // Define BUFFER_SIZE if not provided via compiler flag (-D BUFFER_SIZE=42)
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 1
+#  define BUFFER_SIZE 42
 # endif
 
 typedef struct s_fd_list
@@ -39,5 +39,6 @@ void					ft_remove_fd_node(t_fd_list **head, int fd);
 char					*ft_extract_n_update(t_fd_list *node);
 char					*ft_strdup(const char *str, size_t size);
 char					*ft_strslice(const char *start, const char *end);
-char	*ft_clear_all_and_return(t_fd_list **head, char *to_free, char *ret);
+char					*ft_clear_all_and_return(t_fd_list **head,
+							char *to_free, char *ret);
 #endif
