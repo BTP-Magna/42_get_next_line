@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/10 22:46:24 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 01:47:16 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,11 @@
 #  define BUFFER_SIZE 42
 # endif
 
+# define GNL_OK 1
+# define GNL_READ_EOF 0
+# define GNL_READ_ERR -1
+# define GNL_ALLOC_FAIL -2
+
 typedef struct s_fd_list
 {
 	int					fd;
@@ -30,15 +35,12 @@ typedef struct s_fd_list
 }						t_fd_list;
 
 char					*get_next_line(int fd);
-char					*ft_gnl_append_stash(t_fd_list *node, char *buffer,
-							ssize_t buff_size);
-char					*ft_gnl_extract(char **st_buff, char *nl_ptr);
 
 t_fd_list				*ft_get_fd_node(t_fd_list **head, int fd);
 void					ft_remove_fd_node(t_fd_list **head, int fd);
-char					*ft_extract_n_update(t_fd_list *node);
-char					*ft_strdup(const char *str, size_t size);
-char					*ft_strslice(const char *start, const char *end);
 char					*ft_clear_all_and_return(t_fd_list **head,
 							char *to_free, char *ret);
+char					*ft_strndup(const char *str, size_t size);
+char					*ft_strslice(const char *start, const char *end);
+
 #endif

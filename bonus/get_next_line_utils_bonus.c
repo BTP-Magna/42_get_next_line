@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 19:26:54 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/10 22:46:26 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 01:46:45 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,10 @@ t_fd_list	*ft_get_fd_node(t_fd_list **head, int fd)
 		node = node->next;
 	}
 	node = malloc(sizeof(t_fd_list));
-	if (!node)          // need way to clean the head for all it link list node
-		return (NULL);  // or maybe clean it outside
-	node->stash = NULL; // Struct init without explicit assign value will
-	node->size = 0;     // be assign as NULL or 0 so these two can be remove
+	if (!node)
+		return (NULL);
+	node->stash = NULL;
+	node->size = 0;
 	node->fd = fd;
 	node->nl_offset = -1;
 	node->next = *head;
@@ -48,10 +48,12 @@ t_fd_list	*ft_get_fd_node(t_fd_list **head, int fd)
 }
 
 /**
- * @brief Delete and clean link list node that match the fd
+ * @brief Remove a single node matching the given fd.
  *
- * @param head
- * @param fd
+ * @param head Address of head pointer to fd link list
+ * @param fd File descriptor to match.
+ *
+ * @note Frees the node’s stash and the node itself.
  */
 void	ft_remove_fd_node(t_fd_list **head, int fd)
 {
@@ -65,7 +67,7 @@ void	ft_remove_fd_node(t_fd_list **head, int fd)
 		if (current->fd == fd)
 		{
 			if (!previous)
-				*head = (*head)->next;
+				*head = current->next;
 			else
 				previous->next = current->next;
 			free(current->stash);
@@ -78,9 +80,9 @@ void	ft_remove_fd_node(t_fd_list **head, int fd)
 }
 
 /**
- * @brief Frees entire fd stash list and an optional pointer, returning ret.
+ * @brief Frees all fd lists node and optional memory, returning ret.
  *
- * @param head Double pointer to stash list head.
+ * @param head Address of head pointer to fd link list
  * @param to_free Optional memory (like buffer) to free.
  * @param ret Value to return (usually NULL).
  * @return ret
@@ -91,58 +93,45 @@ char	*ft_clear_all_and_return(t_fd_list **head, char *to_free, char *ret)
 {
 	t_fd_list	*node;
 
-	while (*head)
+	if (head)
 	{
-		node = *head;
-		*head = (*head)->next;
-		free(node->stash);
-		free(node);
+		while (*head)
+		{
+			node = *head;
+			*head = (*head)->next;
+			free(node->stash);
+			free(node);
+		}
+		*head = NULL;
 	}
 	free(to_free);
 	return (ret);
 }
 
-char	*ft_extract_n_update(t_fd_list *node)
+/**
+ * @brief Duplicate the `size` characters of a string.
+ *
+ * @param str The source string to duplicate from.
+ * @param size The maximum number of characters to copy.
+ * @return A newly allocated string, or NULL on allocation failure.
+ *
+ * @note Does not check if `size` exceeds the actual string length.
+ */
+char	*ft_strndup(const char *str, size_t size)
 {
-	char	*extract_str;
-	ssize_t	i_extract;
-	ssize_t	i_stash;
-	ssize_t	new_len;
-
-	new_len = node->size - (node->nl_offset + 1);
-	extract_str = malloc(sizeof(char) * (new_len + 1));
-	if (!extract_str)
-		return (NULL);
-	i_extract = 0;
-	i_stash = node->nl_offset + 1;
-	node->nl_offset = -1;
-	while (i_extract < new_len)
-	{
-		if (node->stash[i_stash] == '\n' && node->nl_offset == -1)
-			node->nl_offset = i_extract;
-		extract_str[i_extract++] = node->stash[i_stash++];
-	}
-	extract_str[i_extract] = '\0';
-	node->size = new_len;
-	free(node->stash);
-	return (extract_str);
-}
-
-char	*ft_strdup(const char *str, size_t size)
-{
-	char	*n_str;
+	char	*new_str;
 	char	*ptr;
 
 	if (!str)
 		return (NULL);
-	n_str = malloc(size + 1);
-	if (!n_str)
+	new_str = malloc(size + 1);
+	if (!new_str)
 		return (NULL);
-	ptr = n_str;
-	while (*str)
+	ptr = new_str;
+	while (size--)
 		*ptr++ = *str++;
 	*ptr = '\0';
-	return (n_str);
+	return (new_str);
 }
 
 /**
@@ -157,12 +146,12 @@ char	*ft_strdup(const char *str, size_t size)
  * @return Newly allocated string on success, or NULL on error.
  *
  * @note Caller must ensure that `start <= end` and that both belong to the same
- * allocation string.
+ * allocation string. If start == end, returns empty string ("")
  */
 char	*ft_strslice(const char *start, const char *end)
 {
-	char	*new_str;
-	char	*ptr;
+	char *new_str;
+	char *ptr;
 
 	if (!start || !end || start > end)
 		return (NULL);

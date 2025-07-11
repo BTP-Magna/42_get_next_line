@@ -6,36 +6,27 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/10 22:46:07 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 02:04:26 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
 /**
- * Allocate extend str to copy over old stash and append buffer
- * update nl_offset when found right now it not optimize and check newline
- * every buffer loop so either while loop to stop when found new line or
- * reach end of buffer and then check if current index of buffer is new line
- * if so update once then copy the less of the character in buffer
- */
-/**
- * @brief Append buffer to existing stash and track newline position
+ * @brief Append buffer to existing stash and track newline offset
  *
  * @details
- * - Allocates new buffer to hold previous stash + new buffer
- * - Copies both into it while updating newline offset if '\n' is found
- * - Frees old stash and updates stash size
+ * - Allocates (stash + buffer) combined space.
+ * - Copies stash and buffer into new string.
+ * - Updates `nl_offset` if newline is found.
+ * - Frees old stash, updates stash pointer and size.
  *
- * @param node Pointer to fd node (contains stash and size tracking)
- * @param buffer Newly read content from fd
- * @param buff_size Number of bytes read into buffer
- * @return char* New stash string, or NULL on allocation failure
- *
- * @note Updates node->nl_offset when newline is found
- * @note Caller must reassign stash pointer (or wrap this internally)
+ * @param node FD-specific stash node.
+ * @param buffer Newly read string.
+ * @param buff_size Size of the buffer.
+ * @return GNL_OK on success, GNL_ALLOC_FAIL on malloc failure.
  */
-char	*ft_gnl_append_stash(t_fd_list *node, char *buffer, ssize_t buff_size)
+static int	ft_stash_append(t_fd_list *node, char *buffer, ssize_t buff_size)
 {
 	char	*new_stash;
 	ssize_t total_len;
@@ -45,7 +36,7 @@ char	*ft_gnl_append_stash(t_fd_list *node, char *buffer, ssize_t buff_size)
 	total_len = node->size + buff_size;
 	new_stash = malloc(sizeof(char) * (total_len + 1));
 	if (!new_stash)
-		return (NULL); // need to clean all link list node and buffer;
+		return (GNL_ALLOC_FAIL);
 	i_stash = -1;
 	while(++i_stash < node->size)
 		new_stash[i_stash] = node->stash[i_stash];
@@ -57,24 +48,63 @@ char	*ft_gnl_append_stash(t_fd_list *node, char *buffer, ssize_t buff_size)
 		new_stash[i_stash++] = buffer[i_buff++];
 	}
 	new_stash[i_stash] = '\0';
-	node->size += buff_size;
 	free(node->stash);
-	return (new_stash);
+	node->stash = new_stash;
+	node->size += buff_size;
+	return (GNL_OK);
 }
 
 /**
- * @brief
+ * @brief Update stash after extracting a line (skipping past newline).
  *
- * If node statsh is empty or doesn't have new line that mean it EOF return
- * node stash and delete the node
+ * @details
+ * - Copies the remainder of the stash after the first newline.
+ * - Updates size and newline offset.
+ * - Frees the old stash and replaces it with the new one.
  *
- * else split extract the line up to and include newline and update excess to
- * stash
- *
- * @param node
- * @return char*
+ * @param node The fd node to update.
+ * @return Updated stash string, or NULL on allocation failure or empty.
  */
-char	*ft_gnl_extract_line(t_fd_list **head, t_fd_list *node)
+static char	*ft_extract_n_update(t_fd_list *node)
+{
+	char	*extract_str;
+	ssize_t	i_extract;
+	ssize_t	i_stash;
+	ssize_t	new_len;
+
+	new_len = node->size - (node->nl_offset + 1);
+	extract_str = malloc(sizeof(char) * (new_len + 1));
+	if (!extract_str)
+		return (NULL);
+	i_extract = 0;
+	i_stash = node->nl_offset + 1;
+	node->nl_offset = -1;
+	while (i_extract < new_len)
+	{
+		if (node->stash[i_stash] == '\n' && node->nl_offset == -1)
+			node->nl_offset = i_extract;
+		extract_str[i_extract++] = node->stash[i_stash++];
+	}
+	extract_str[i_extract] = '\0';
+	node->size = new_len;
+	free(node->stash);
+	return (extract_str);
+}
+
+/**
+ * @brief Extract a line from the node’s stash and update it.
+ *
+ * @details
+ * - If no newline is found, return the entire stash and remove the node.
+ * - If newline exists, extract line up to newline (inclusive),
+ *   update the stash to hold remaining characters (if any).
+ * - On allocation failure, clear the list and return NULL.
+ *
+ * @param head Pointer to the linked list head (modified if node is removed).
+ * @param node Node to extract line from.
+ * @return Extracted line (heap allocated), or NULL on failure.
+ */
+static char	*ft_extract_line(t_fd_list **head, t_fd_list *node)
 {
 	char	*extract_str;
 	char	*excess_str;
@@ -84,7 +114,7 @@ char	*ft_gnl_extract_line(t_fd_list **head, t_fd_list *node)
 		if (!node->stash || *(node->stash) == '\0')
 			extract_str = NULL;
 		else
-			extract_str = ft_strdup(node->stash, node->size);
+			extract_str = ft_strndup(node->stash, node->size);
 		ft_remove_fd_node(head, node->fd);
 		return (extract_str);
 	}
@@ -99,41 +129,85 @@ char	*ft_gnl_extract_line(t_fd_list **head, t_fd_list *node)
 }
 
 /**
- * @brief Get the next line bonus object
+ * @brief Read from a file descriptor until newline or EOF is reached.
  *
- * Check if input fd and buffersize is valid
+ * @details
+ * - Allocates a buffer to read data in chunks of BUFFER_SIZE.
+ * - Continues reading and appending to the stash until a newline is found
+ *   or EOF/read error occurs.
+ * - Frees the buffer before returning.
+ *
+ * @param node Pointer to the fd node whose stash will be appended.
+ * @return
+ * - GNL_OK (1) on success and newline found,
+ * - GNL_ALLOC_FAIL (-2) on malloc failure,
+ * - GNL_READ_ERR (-1) on read() failure,
+ * - GNL_READ_EOF (0) on EOF.
+ *
+ * @note If node->nl_offset is already set, the function returns immediately.
+ */
+static int	ft_read_till_nextline(t_fd_list *node)
+{
+	char	*buffer;
+	ssize_t	byte_read;
+
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
+		return (GNL_ALLOC_FAIL);
+	while (node->nl_offset == -1)
+	{
+		byte_read = read(node->fd, buffer, BUFFER_SIZE);
+		if (byte_read == GNL_READ_ERR || byte_read == GNL_READ_EOF)
+		{
+			free(buffer);
+			return (byte_read);
+		}
+		buffer[byte_read] = '\0';
+		if (ft_stash_append(node, buffer, byte_read) == GNL_ALLOC_FAIL)
+		{
+			free(buffer);
+			return (GNL_ALLOC_FAIL);
+		}
+	}
+	free(buffer);
+	return (GNL_OK);
+}
+
+/**
+ * @brief Get next line bonus from multiple FD
+ * @details
+ *
+ * 1. Validate FD (read fd check might move after get node)
+ * 2. Get fd node or create new one it didn't exist in link list
+ * 		if malloc node fail clean link list and return NULL cause memory full
+ * 3. Check if current node have new line if not read until EOF or find newline
+ * 4. Extract and return one line if there excess save them in node stash
  *
  * @param fd
  * @return char*
  */
 char	*get_next_line(int fd)
 {
-	static t_fd_list	*stash_head;
-	t_fd_list			*stash_node;
-	char				*buffer;
-	ssize_t				byte_read;
+	static t_fd_list	*head;
+	t_fd_list			*node;
+	int					result;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) == -1)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	stash_node = ft_get_fd_node(&stash_head, fd);
-	if (!stash_node)
-		return (ft_clear_all_and_return(&stash_head, NULL, NULL));
-	buffer = malloc(BUFFER_SIZE + 1);
-	while (stash_node->nl_offset == -1)
+	node = ft_get_fd_node(&head, fd);
+	if (!node)
+		return (ft_clear_all_and_return(&head, NULL, NULL));
+	if (node->nl_offset != -1)
+		return (ft_extract_line(&head, node));
+	result = ft_read_till_nextline(node);
+	if (result == GNL_READ_ERR)
 	{
-		byte_read = read(fd, buffer, BUFFER_SIZE);
-		if (byte_read == -1)
-			return (ft_clear_all_and_return(&stash_head, buffer, NULL));
-		if (byte_read == 0)
-			break ;
-		*(buffer + byte_read) = '\0';
-		stash_node->stash = ft_gnl_append_stash(stash_node, buffer, byte_read);
-		if (!stash_node->stash)
-			return (ft_clear_all_and_return(&stash_head, buffer, NULL));
+		ft_remove_fd_node(&head, node->fd);
+		return (NULL);
 	}
-	free(buffer);
-	// print_fd_list(stash_head); // For debug
-	return (ft_gnl_extract_line(&stash_head, stash_node));
+	if (result == GNL_ALLOC_FAIL)
+		return (ft_clear_all_and_return(&head, NULL, NULL));
+	return (ft_extract_line(&head, node));
 }
 
 // #include <fcntl.h>
@@ -141,67 +215,47 @@ char	*get_next_line(int fd)
 
 // void	ft_putstr(char *str)
 // {
+// 	if (!str)
+// 		return ;
 // 	while (*str)
 // 		write(1, str++, 1);
 // }
 
+// void	test_fd(int fd, int fake_fd, const char *label)
+// {
+// 	char	*line;
+
+// 	write(1, "\n-- ", 4);
+// 	ft_putstr((char *)label);
+// 	write(1, " --\n", 4);
+
+// 	line = get_next_line(fake_fd);
+// 	line = get_next_line(fd);
+// 	ft_putstr(line);
+// 	free(line);
+// }
+
 // int	main(void)
 // {
-// 	char	*next_line;
-
-// 	int fd, fd1, fd2, fd3;
-// 	fd = open("../41_with_nl", O_RDONLY);
-// 	if (fd == -1)
+// 	int fd1 = open("../41_with_nl", O_RDONLY);
+// 	int fd2 = open("../42_with_nl", O_RDONLY);
+// 	int fd3 = open("../43_with_nl", O_RDONLY);
+// 	int fd4 = open("../nl", O_RDONLY);
+// 	if (fd1 < 0 || fd2 < 0 || fd3 < 0 || fd4 < 0)
 // 		return (1);
-// 	next_line = get_next_line(1000);
-// 	next_line = get_next_line(fd);
-// 	ft_putstr(next_line);
-// 	free(next_line);
-// 	fd1 = open("../42_with_nl", O_RDONLY);
-// 	if (fd1 == -1)
-// 		return (1);
-// 	next_line = get_next_line(1001);
-// 	next_line = get_next_line(fd1);
-// 	ft_putstr(next_line);
-// 	free(next_line);
-// 	fd2 = open("../43_with_nl", O_RDONLY);
-// 	if (fd1 == -1)
-// 		return (1);
-// 	next_line = get_next_line(1002);
-// 	next_line = get_next_line(fd2);
-// 	ft_putstr(next_line);
-// 	free(next_line);
 
-// 	next_line = get_next_line(1003);
-// 	next_line = get_next_line(fd);
-// 	ft_putstr(next_line);
-// 	free(next_line);
-// 	next_line = get_next_line(1004);
-// 	next_line = get_next_line(fd1);
-// 	ft_putstr(next_line);
-// 	free(next_line);
-// 	next_line = get_next_line(1005);
-// 	next_line = get_next_line(fd2);
-// 	ft_putstr(next_line);
-// 	free(next_line);
+// 	test_fd(fd1, 1000, "Test 1: 41_with_nl");
+// 	test_fd(fd2, 1001, "Test 2: 42_with_nl");
+// 	test_fd(fd3, 1002, "Test 3: 43_with_nl");
+// 	test_fd(fd1, 1004, "Test 4: Reuse 41_with_nl");
+// 	test_fd(fd2, 1005, "Test 5: Reuse 42_with_nl");
+// 	test_fd(fd3, 1006, "Test 6: Reuse 43_with_nl");
+// 	test_fd(fd4, 1007, "Test 7: Single newline");
+// 	test_fd(fd4, 1008, "Test 7: Single newline");
 
-// 	next_line = get_next_line(fd);
-// 	next_line = get_next_line(fd1);
-// 	next_line = get_next_line(fd2);
-
-// 	fd3 = open("../nl", O_RDONLY);
-// 	if (fd == -1)
-// 		return (1);
-// 	next_line = get_next_line(1006);
-// 	next_line = get_next_line(fd3);
-// 	ft_putstr(next_line);
-// 	free(next_line);
-// 	next_line = get_next_line(1007);
-// 	next_line = get_next_line(fd3);
-
-// 	close(fd);
 // 	close(fd1);
 // 	close(fd2);
 // 	close(fd3);
+// 	close(fd4);
 // 	return (0);
 // }
