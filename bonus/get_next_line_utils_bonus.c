@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/09 19:26:54 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/12 01:46:45 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 23:23:00 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,8 +150,8 @@ char	*ft_strndup(const char *str, size_t size)
  */
 char	*ft_strslice(const char *start, const char *end)
 {
-	char *new_str;
-	char *ptr;
+	char	*new_str;
+	char	*ptr;
 
 	if (!start || !end || start > end)
 		return (NULL);

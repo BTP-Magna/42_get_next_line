@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/12 02:04:26 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 23:22:26 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 static int	ft_stash_append(t_fd_list *node, char *buffer, ssize_t buff_size)
 {
 	char	*new_stash;
-	ssize_t total_len;
+	ssize_t	total_len;
 	ssize_t	i_buff;
 	ssize_t	i_stash;
 
@@ -38,7 +38,7 @@ static int	ft_stash_append(t_fd_list *node, char *buffer, ssize_t buff_size)
 	if (!new_stash)
 		return (GNL_ALLOC_FAIL);
 	i_stash = -1;
-	while(++i_stash < node->size)
+	while (++i_stash < node->size)
 		new_stash[i_stash] = node->stash[i_stash];
 	i_buff = 0;
 	while (i_stash < total_len)

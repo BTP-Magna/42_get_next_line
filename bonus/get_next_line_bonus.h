@@ -6,12 +6,12 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 21:58:16 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/12 01:47:16 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/12 23:21:51 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#ifndef GET_NEXT_LINE_BONUS_H
+# define GET_NEXT_LINE_BONUS_H
 # include <stdlib.h>
 # include <unistd.h>
 
@@ -30,7 +30,7 @@ typedef struct s_fd_list
 	int					fd;
 	char				*stash;
 	ssize_t				size;
-	ssize_t nl_offset; // or char *nl_ptr;
+	ssize_t				nl_offset; // or char *nl_ptr;
 	struct s_fd_list	*next;
 }						t_fd_list;
 
