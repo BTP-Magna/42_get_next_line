@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/11 02:43:39 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/16 00:42:03 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,34 +148,3 @@ char	*get_next_line(int fd)
 	free(buffer);
 	return (ft_gnl_extract(&st_buff, nl_ptr));
 }
-
-// #include <fcntl.h>
-// #include <stdio.h>
-
-// void	ft_putstr(char *str)
-// {
-// 	while (*str)
-// 		write(1, str++, 1);
-// }
-
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*next_line;
-
-// 	fd = open("test.txt", O_RDONLY);
-// 	if (fd == -1)
-// 		return (1);
-// 	// next_line = malloc(BUFFER_SIZE);
-// 	// *next_line = '\0';
-// 	// ft_putstr(next_line);
-// 	next_line = get_next_line(fd);
-// 	while (next_line)
-// 	{
-// 		ft_putstr(next_line);
-// 		free(next_line);
-// 		next_line = get_next_line(fd);
-// 	}
-// 	close(fd);
-// 	return (0);
-// }

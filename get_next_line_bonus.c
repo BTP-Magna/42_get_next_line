@@ -6,7 +6,7 @@
 /*   By: thamahag <BTP_Magna@proton.me>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/30 22:00:08 by thamahag          #+#    #+#             */
-/*   Updated: 2025/07/12 23:22:26 by thamahag         ###   ########.fr       */
+/*   Updated: 2025/07/16 00:41:50 by thamahag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,53 +209,3 @@ char	*get_next_line(int fd)
 		return (ft_clear_all_and_return(&head, NULL, NULL));
 	return (ft_extract_line(&head, node));
 }
-
-// #include <fcntl.h>
-// #include <stdio.h>
-
-// void	ft_putstr(char *str)
-// {
-// 	if (!str)
-// 		return ;
-// 	while (*str)
-// 		write(1, str++, 1);
-// }
-
-// void	test_fd(int fd, int fake_fd, const char *label)
-// {
-// 	char	*line;
-
-// 	write(1, "\n-- ", 4);
-// 	ft_putstr((char *)label);
-// 	write(1, " --\n", 4);
-
-// 	line = get_next_line(fake_fd);
-// 	line = get_next_line(fd);
-// 	ft_putstr(line);
-// 	free(line);
-// }
-
-// int	main(void)
-// {
-// 	int fd1 = open("../41_with_nl", O_RDONLY);
-// 	int fd2 = open("../42_with_nl", O_RDONLY);
-// 	int fd3 = open("../43_with_nl", O_RDONLY);
-// 	int fd4 = open("../nl", O_RDONLY);
-// 	if (fd1 < 0 || fd2 < 0 || fd3 < 0 || fd4 < 0)
-// 		return (1);
-
-// 	test_fd(fd1, 1000, "Test 1: 41_with_nl");
-// 	test_fd(fd2, 1001, "Test 2: 42_with_nl");
-// 	test_fd(fd3, 1002, "Test 3: 43_with_nl");
-// 	test_fd(fd1, 1004, "Test 4: Reuse 41_with_nl");
-// 	test_fd(fd2, 1005, "Test 5: Reuse 42_with_nl");
-// 	test_fd(fd3, 1006, "Test 6: Reuse 43_with_nl");
-// 	test_fd(fd4, 1007, "Test 7: Single newline");
-// 	test_fd(fd4, 1008, "Test 7: Single newline");
-
-// 	close(fd1);
-// 	close(fd2);
-// 	close(fd3);
-// 	close(fd4);
-// 	return (0);
-// }
